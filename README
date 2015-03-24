@@ -55,10 +55,10 @@ to work nicely with Eclipse-kepler
     * /WebContent/includes/register.jsp
     
     <%
-		Object message = request.getAttribute("message");
-		if( message != null )
-			out.println(message.toString());
-	%>
+        Object message = request.getAttribute("message");
+        if( message != null )
+            out.println(message.toString());
+    %>
  
  8. Notes for git newby per 
     https://help.github.com/articles/
