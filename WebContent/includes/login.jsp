@@ -8,7 +8,11 @@
 </head>
 <body>
 
-<%= request.getAttribute("message") %>
+<% 
+Object message = request.getAttribute("message");
+if( message != null )
+	out.println(message.toString());
+%>
 
 <h1>Login</h1>
 

@@ -6,22 +6,27 @@ import org.hibernate.Session;
 
 import com.jjoe64.shiroexample.models.UserRole;
 
-public class UserRoleDAO {
+public class UserRoleDAO
+{
 	private final Session session;
 
-	public UserRoleDAO(Session s) {
+	public UserRoleDAO(Session s)
+	{
 		session = s;
 	}
 
-	public List<UserRole> getUserRolesByEmail(String email) {
+	public List<UserRole> getUserRolesByEmail(String email)
+	{
 		@SuppressWarnings("unchecked")
 		List<UserRole> roles = session
-				.createQuery("from UserRole where email=?").setString(0, email)
+				.createQuery("from UserRole where email = :email")
+				.setString("email", email)
 				.list();
 		return roles;
 	}
 
-	public void insert(UserRole r) {
+	public void insert(UserRole r)
+	{
 		session.persist(r);
 	}
 }

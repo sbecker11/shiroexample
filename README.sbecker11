@@ -1,0 +1,85 @@
+# shiro-hibernate-mysql-eclipse-example by sbecker11
+
+I have updated the tutorial provided by jjoe64 at
+http://www.jjoe64.com/2014/01/apache-shiro-with-hibernatesql-full.html
+to work nicely with Eclipse-kepler
+
+1. Refactored the source files to follow the standard maven layout:
+   /shiroexample
+      src
+        main
+          java
+            com
+              jjoe64
+                auth
+                  *.java
+                daos
+                  *.java
+                models
+                  *.java
+                utils
+                  *.java
+          resources
+            hibernate.cfg.xml
+
+2. Made the following additions to the pom.xml file
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  </properties>
+  ...
+   <dependency>
+     <groupId>javax.servlet</groupId>
+     <artifactId>javax.servlet-api</artifactId>
+     <version>3.1.0</version>
+     <scope>provided</scope>
+   </dependency>
+   
+ 3. Updated HibernateUtil.java per the suggestions made at 
+    http://stackoverflow.com/questions/8621906/
+    	is-buildsessionfactory-deprecated-in-hibernate-4
+    
+ 4. Fixed deprecation WARNINGs of using positional Hibernate query parameters  
+    in UserDAO and UserRoleDAO by changing them to use named parameters instead.
+    
+ 5. Added /scripts directory with shared eclipse launch script named 
+    "shiroexample clean compile package.launch"
+ 
+ 6. Added user-define PASSWORD marker to 
+    * /src/main/resources/hibernate.cfg.xml
+    * /WebContent/WEB-INF/shiro.ini
+ 
+ 7. Wrapped the request.message attribute with in-line java in
+    * /WebContent/includes/login.jsp
+    * /WebContent/includes/register.jsp
+    
+    <%
+		Object message = request.getAttribute("message");
+		if( message != null )
+			out.println(message.toString());
+	%>
+ 
+ 8. Notes for git newby per 
+    https://help.github.com/articles/
+    	adding-an-existing-project-to-github-using-the-command-line/
+
+    First time only:
+      $ cd <project base>
+      $ rm -rf .git
+      $ git init
+      $ git add .
+      $ git commit -m 'First commit'
+      $ git remote add origin <remote github URL>
+      $ git remote -v
+      $ git push origin master
+      
+    After any subsequent local changes:
+      $ git add .
+      $ git commit -m 'message'
+      $ git push origin master
+      
+ Enjoy,
+ Shawn Becker (sbecker11)
+ 2015-03-24T13:53:21.000-0400
+ 
