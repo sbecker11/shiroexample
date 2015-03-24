@@ -2,7 +2,7 @@
 
 I have updated the tutorial provided by jjoe64 at
 http://www.jjoe64.com/2014/01/apache-shiro-with-hibernatesql-full.html
-to work nicely with Eclipse-kepler
+to work nicely with Eclipse-kepler by making the following changes:
 
 1. Refactored the source files to follow the standard maven layout:
    /shiroexample
@@ -60,26 +60,82 @@ to work nicely with Eclipse-kepler
             out.println(message.toString());
     %>
  
- 8. Notes for git newby per 
-    https://help.github.com/articles/
-    	adding-an-existing-project-to-github-using-the-command-line/
+
+How to clone, build and test this project on Mac OSX
 
     First time only:
-      $ cd <project base>
-      $ rm -rf .git
-      $ git init
+    1. go to my fork of jjoe64's original project in github
+      open https://github.com/sbecker11/shiroexample
+            
+    2. copy the HTTPS clone URL and paste it into your terminal window
+      $ cd <eclipse workspace>
+      $ git clone https://github.com/sbecker11/shiroexample.git
+      
+    3. go into new project folder
+      $ cd <eclipse workspace>/shiroexample
+      
+    4. verify remote master
+      $ git remote -v
+      
+    5. eclipsify the project
+      mvn eclipse:eclipse
+      
+    6. open Eclipse-kepler and import the new shiroexample maven project
+      Eclipse > Import... > Existing maven project and
+      open <eclipse workspace>/shiroexample
+      
+    7. Update the shiroexample project from Project Explorer
+      Right-click on shiroexample > Maven > Update Project...
+      
+    8. Fix the build path
+      Right-click on shiroexample > Build Path > Configure Build Path... 
+      in Libraries tab 
+        remove all but 1.7 JRE System Library
+        click "Add Library" and select "Maven Managed Dependencies"
+      
+    9. Update the shiroexample project again
+      Right-click on project name > Maven > Update Project...
+      
+    10. Start mysql server and create a new schema named "shiroexample"
+      
+    11. Upload the sql dump file into shiroexample
+      $ mysql -h localhost -u root --password=PASSWORD shiroexample < dump.sql
+    
+    12. Compile and package the webapp using Eclipse > Run Configurations... 
+      and select shiroexample clean compile package
+    
+    13. Start the local tomcat7 server
+      $ /usr/local/apache-tomcat/bin/startup.sh
+    
+    14. Open the local tomcat7 manager
+      $ open http://localhost:8080/manager/html
+    
+    15. In WAR file to deploy, Select WAR file to upload "Browse..." and Open
+      <eclipse workspace>/shiroexample/target/shiroexample-0.0.1-SNAPSHOT.war
+      and then click "Deploy"
+      
+    16. Test the shiroexample web app by going first to the register page 
+      $ open http://localhost:8080/shiroexample-0.0.1-SNAPSHOT/register
+      
+    17. Then submit an E-Mail and Password for a new AMIN user
+    
+    18. Click the Login link and then the Admin link and then Logout
+    
+    19. Commit all local changes
       $ git add .
       $ git commit -m 'First commit'
-      $ git remote add origin <remote github URL>
-      $ git remote -v
+      
+    20. Push local origin changes to remote master
       $ git push origin master
       
-    After any subsequent local changes:
+    21. After making any more local changes commit them to local origin
       $ git add .
       $ git commit -m 'message'
+      
+    22. And then push local origin changes to remote master
       $ git push origin master
       
  Enjoy,
  Shawn Becker (sbecker11)
- 2015-03-24T13:53:21.000-0400
+ 2015-03-24T14:55:36.000-0400
  
