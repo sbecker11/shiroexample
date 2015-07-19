@@ -4,11 +4,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Insert title here</title>
+<title>Admin page</title>
 </head>
 <body>
 
-<h2>This page is only accessible as administrator.</h2>
+<h2>This page is only accessible to authenticated admins.</h2>
+
+<a href="login?logout=1">Logout</a>
 
 </body>
 </html>

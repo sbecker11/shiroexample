@@ -9,42 +9,44 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
 
 /**
  * Servlet implementation class HelloServlet
  */
 @WebServlet("/HelloServlet")
-public class HelloServlet extends HttpServlet {
+public class HelloServlet extends HttpServlet
+{
 	private static final long serialVersionUID = 1L;
 
 	@Override
 	protected void doGet(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+			HttpServletResponse response) throws ServletException, IOException
+	{
 		response.setContentType("text/html");
 
 		request.setAttribute("currentEmail", getCurrentUserEmail());
 
-		org.apache.shiro.subject.Subject currentUser = SecurityUtils
-				.getSubject();
+		Subject currentUser = SecurityUtils.getSubject();
 		request.setAttribute("adminAccess", currentUser.isPermitted("admin:access"));
 
-		// draw JSP
+		// render JSP into the response
 		try {
-			request.getRequestDispatcher("/includes/hello.jsp").include(
-					request, response);
+			request.getRequestDispatcher("/includes/hello.jsp")
+					.include(request, response);
 		} catch (ServletException e) {
 			e.printStackTrace();
 		}
 
 	}
 
-	public String getCurrentUserEmail() {
-		org.apache.shiro.subject.Subject currentUser = SecurityUtils
-				.getSubject();
+	public String getCurrentUserEmail()
+	{
+		Subject currentUser = SecurityUtils.getSubject();
 
 		if (currentUser.isAuthenticated()) {
-			String mail = (String) currentUser.getSession().getAttribute(
-					"username");
+			String mail = (String) currentUser.getSession()
+					.getAttribute("username");
 			return mail;
 		} else {
 			return null;

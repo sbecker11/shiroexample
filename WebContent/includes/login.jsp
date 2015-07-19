@@ -4,7 +4,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Insert title here</title>
+<title>/includes/login.jsp</title>
 </head>
 <body>
 
@@ -18,13 +18,17 @@ if( message != null )
 
 <form action="login" method="post">
 	E-Mail
-	<input type="text" name="email" />
+	<input type="text" name="username" />
 	<br/>
 	Password
-	<input type="password" name="p" />
+	<input type="password" name="password" />
 	<br/>
 	<input type="submit" />
 </form>
+
+<p>
+<a href="hello?a=b&c=d">click this link to see Hello with query params</a>
+</p>
 
 </body>
 </html>

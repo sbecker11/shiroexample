@@ -13,25 +13,30 @@ import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.LockedAccountException;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.config.IniSecurityManagerFactory;
+import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.Factory;
+import org.apache.shiro.web.util.WebUtils;
 
 /**
  * Servlet implementation class LoginServlet
  */
 @WebServlet("/LoginServlet")
-public class LoginServlet extends HttpServlet {
+public class LoginServlet extends HttpServlet
+{
 
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = -6856291352568121673L;
 
-	public LoginServlet() {
+	public LoginServlet()
+	{
 		// init shiro - place this e.g. in the constructor
-		Factory<org.apache.shiro.mgt.SecurityManager> factory = new IniSecurityManagerFactory();
-		org.apache.shiro.mgt.SecurityManager securityManager = factory
-				.getInstance();
+		Factory<SecurityManager> factory = new IniSecurityManagerFactory();
+		SecurityManager securityManager = factory.getInstance();
 		SecurityUtils.setSecurityManager(securityManager);
 	}
 
@@ -40,20 +45,25 @@ public class LoginServlet extends HttpServlet {
 	 *      response)
 	 */
 	@Override
-	protected void doGet(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	protected void doGet(
+			HttpServletRequest request,
+			HttpServletResponse response)
+			throws ServletException, IOException
+	{
 		response.setContentType("text/html");
 
 		if (request.getParameter("logout") != null) {
-			org.apache.shiro.subject.Subject currentUser = SecurityUtils
-					.getSubject();
-			currentUser.logout();
+			Subject currentUser = SecurityUtils.getSubject();
+			if (currentUser.isAuthenticated()) {
+				currentUser.logout();
+				System.out.println("current user logged out");
+			}
 		}
 
 		// draw JSP
 		try {
-			request.getRequestDispatcher("/includes/login.jsp").include(
-					request, response);
+			request.getRequestDispatcher("/includes/login.jsp")
+					.include(request, response);
 		} catch (ServletException e) {
 			e.printStackTrace();
 		}
@@ -66,79 +76,87 @@ public class LoginServlet extends HttpServlet {
 	 */
 	@Override
 	protected void doPost(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+			HttpServletResponse response) throws ServletException, IOException
+	{
 		response.setContentType("text/html");
 
-		String email = request.getParameter("email");
-		String pwd = request.getParameter("p");
-		if (email == null || pwd == null) {
+		String username = request.getParameter("username");
+		String password = request.getParameter("password");
+		if (username == null || password == null) {
 			request.setAttribute("message", "wrong parameters");
 		} else {
-			boolean b = tryLogin(email, pwd, false);
-			if (b) {
-				request.setAttribute(
-						"message",
-						"Login successful. Welcome. Open <a href='hello'>hello Servlet</a> to check if you are logged in.");
-			} else {
-				request.setAttribute("message",
-						"wrong email/pwd or an error...");
+			try {
+				boolean justLoggedIn = tryLogin(username, password, false);
+				if (justLoggedIn) {
+					request.setAttribute("message", "Login successful");
+
+					// redirect to denied request which was saved by 
+					// PassThruAuthenticationFilter or to fallbackUrl
+					String fallbackUrl = "/hello";
+					WebUtils.redirectToSavedRequest(request, response, fallbackUrl);
+					return;
+				} else {
+					request.setAttribute("message", "wrong email/pwd or an error...");
+				}
+			} catch (AuthorizationException e) {
+				request.setAttribute("message", e.getMessage());
 			}
 		}
 
-		// draw JSP
+		// render JSP into response
 		try {
-			request.getRequestDispatcher("/includes/login.jsp").include(
-					request, response);
+			request.getRequestDispatcher("/includes/login.jsp")
+					.include(request, response);
 		} catch (ServletException e) {
 			e.printStackTrace();
 		}
 	}
 
 	// login
-	public boolean tryLogin(String username, String password, Boolean rememberMe) {
+	public boolean tryLogin(String username, String password, Boolean rememberMe)
+			throws AuthorizationException
+	{
 		// get the currently executing user:
-		org.apache.shiro.subject.Subject currentUser = SecurityUtils
-				.getSubject();
+		Subject currentUser = SecurityUtils.getSubject();
 
 		if (!currentUser.isAuthenticated()) {
 			// collect user principals and credentials in a gui specific manner
 			// such as username/password html form, X509 certificate, OpenID,
-			// etc.
-			// We'll use the username/password example here since it is the most
-			// common.
-			UsernamePasswordToken token = new UsernamePasswordToken(username,
-					password);
-			// this is all you have to do to support 'remember me' (no config -
-			// built in!):
+			// etc.We'll use the username/password example here since it 
+			// is the most common.
+			UsernamePasswordToken token =
+					new UsernamePasswordToken(username, password);
+
+			// this is all you have to do to support 'remember me' 
+			// (no config - built in!):
 			token.setRememberMe(rememberMe);
 
 			try {
 				currentUser.login(token);
 				System.out.println("User ["
-						+ currentUser.getPrincipal().toString()
-						+ "] logged in successfully.");
+					+ currentUser.getPrincipal().toString()
+					+ "] logged in successfully.");
 
-				// save current username in the session, so we have access to
-				// our User model
+				// save current username in the session, 
+				// so we have access to our User model
 				currentUser.getSession().setAttribute("username", username);
+
 				return true;
 			} catch (UnknownAccountException uae) {
-				System.out.println("There is no user with username of "
-						+ token.getPrincipal());
+				throw new AuthorizationException("There is no user with username of "
+					+ token.getPrincipal());
 			} catch (IncorrectCredentialsException ice) {
-				System.out.println("Password for account "
-						+ token.getPrincipal()
-						+ " was incorrect!");
+				throw new AuthorizationException("Password for account "
+					+ token.getPrincipal()
+					+ " was incorrect!");
 			} catch (LockedAccountException lae) {
-				System.out.println("The account for username "
-						+ token.getPrincipal()
-						+ " is locked.  "
-						+ "Please contact your administrator to unlock it.");
+				throw new AuthorizationException("The account for username "
+					+ token.getPrincipal()
+					+ " is locked.  "
+					+ "Please contact your administrator to unlock it.");
 			}
 		} else {
 			return true; // already logged in
 		}
-
-		return false;
 	}
 }

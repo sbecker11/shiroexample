@@ -4,13 +4,15 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Insert title here</title>
+<title>includes/hello.jsp</title>
 </head>
 <body>
 
 <h2>
 This page is only visible to registered users. You are <%= request.getAttribute("currentEmail") %>
 </h2>
+
+<a href="user.jsp">User</a><br/>
 
 <% if (((Boolean) request.getAttribute("adminAccess")) == true) { %>
 	<a href="admin.jsp">Admin</a><br/>

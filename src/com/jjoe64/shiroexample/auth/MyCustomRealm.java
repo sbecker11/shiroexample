@@ -6,16 +6,20 @@ import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.SaltedAuthenticationInfo;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.realm.jdbc.JdbcRealm;
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
+import org.hibernate.TransactionException;
 
 import com.jjoe64.shiroexample.daos.UserDAO;
 import com.jjoe64.shiroexample.models.User;
 import com.jjoe64.shiroexample.util.HibernateUtil;
 
-public class MyCustomRealm extends JdbcRealm {
+public class MyCustomRealm extends JdbcRealm
+{
 	@Override
 	protected AuthenticationInfo doGetAuthenticationInfo(
-			AuthenticationToken token) throws AuthenticationException {
+			AuthenticationToken token) throws AuthenticationException
+	{
 		// identify account to log to
 		UsernamePasswordToken userPassToken = (UsernamePasswordToken) token;
 		final String username = userPassToken.getUsername();
@@ -26,9 +30,10 @@ public class MyCustomRealm extends JdbcRealm {
 		}
 
 		// read password hash and salt from db
-		Session session = HibernateUtil.getSessionFactory().openSession();
-		session.beginTransaction();
+		Session session = null;
 		try {
+			session = HibernateUtil.getSessionFactory().openSession();
+			session.beginTransaction();
 			UserDAO userDAO = new UserDAO(session);
 			final User user = userDAO.getUserByEmail(username);
 
@@ -39,12 +44,25 @@ public class MyCustomRealm extends JdbcRealm {
 
 			// return salted credentials
 			SaltedAuthenticationInfo info = new MySaltedAuthentificationInfo(
-					username, user.getPassword(), user.getSalt());
+				username, user.getPassword(), user.getSalt());
 
 			return info;
+		} catch (TransactionException he) {
+			throw new AuthenticationException("unable to begin hibernate transaction", he);
+		} catch (HibernateException he) {
+			throw new AuthenticationException("unable to open hibernate connection", he);
 		} finally {
-			session.getTransaction().commit();
-			if (session.isOpen()) session.close();
+			if (session != null) {
+				try {
+					session.getTransaction().commit();
+					if (session.isOpen())
+						session.close();
+				} catch (TransactionException he) {
+					throw new AuthenticationException("unable to commit hibernate transaction", he);
+				} catch (HibernateException he) {
+					throw new AuthenticationException("unable to close hibernate connection", he);
+				}
+			}
 		}
 
 	}

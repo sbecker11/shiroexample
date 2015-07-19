@@ -10,7 +10,8 @@
     <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
     <property name="connection.url">jdbc:mysql://localhost:3306/shiroexample</property>
     <property name="connection.username">root</property>
-    <property name="connection.password">PASSWORD</property>
+    <!-- <property name="connection.password">PASSWORD</property>  -->
+    <property name="connection.password">sm00th</property>
     <property name="connection.autoReconnect">true</property>
 
     <property name="cache.provider_class">org.hibernate.cache.HashtableCacheProvider</property>
